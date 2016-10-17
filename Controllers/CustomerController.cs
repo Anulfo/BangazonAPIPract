@@ -31,7 +31,6 @@ namespace Bangazon.Controllers
             {
                 return NotFound();
             }
-
             return Ok(customers);
         }
 
@@ -43,7 +42,6 @@ namespace Bangazon.Controllers
             {
                 return BadRequest(ModelState);
             }
-
             try
             {
                 Customer customer = context.Customer.Single(m => m.CustomerId == id);
@@ -71,7 +69,6 @@ namespace Bangazon.Controllers
             {
                 return BadRequest(ModelState);
             }
-
             context.Customer.Add(customer);
             try
             {
@@ -94,19 +91,53 @@ namespace Bangazon.Controllers
 
         // PUT api/values/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
+        public IActionResult Put(int id, [FromBody]Customer customer)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            context.Customer.Update(customer);
+            try
+            {
+                context.SaveChanges();
+                if (customer == null)
+                {
+                    return NotFound();
+                }
+                return Ok(customer);
+            }
+            catch (System.InvalidOperationException ex)
+            {
+                return NotFound();
+            }
         }
 
         // DELETE api/values/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public IActionResult Delete(int id)
         {
+            Customer customer = context.Customer.Single(m => m.CustomerId == id);
+            if (customer == null)
+            {
+                return NotFound();
+            }
+            try
+            {
+                context.Customer.Remove(customer);
+                context.SaveChanges();
+                return Ok(customer);
+            } 
+            catch (System.InvalidOperationException)
+            {
+                return NotFound();
+            }
         }
 
         private bool CustomerExists(int id)
         {
             return context.Customer.Count(e => e.CustomerId == id) > 0;
         }
+
     }
 }
