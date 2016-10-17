@@ -94,14 +94,50 @@ namespace Bangazon.Controllers
 
         // PUT api/values/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
+        public IActionResult Put(int id, [FromBody]Order order)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            context.Order.Update(order);
+            
+            try
+            {
+                context.SaveChanges();
+                return Ok(order);
+            }
+            catch (System.InvalidOperationException ex)
+            {
+                return NotFound();
+            }
+
         }
 
         // DELETE api/values/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public IActionResult Delete(int id)
         {
+            Order order = context.Order.Single(m => m.OrderId == id);
+            if (order == null)
+            {
+                return NotFound();
+            }
+            try
+            {
+                context.Order.Remove(order);
+                context.SaveChanges();
+                return Ok(order);
+            } 
+            catch (System.InvalidOperationException)
+            {
+                return NotFound();
+            }
         }
 
         private bool OrderExists(int id)
